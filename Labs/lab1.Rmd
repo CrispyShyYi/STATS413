@@ -1,0 +1,403 @@
+---
+title: 'STATS413 --- Lab01'
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  messgae = FALSE,
+  fig.width=6, 
+  fig.height=4
+  )
+```
+
+## Todays' agenda
+
+- Introduction to the software we will be using (Virtual Sites, R, RMarkdown)
+- Data Visualization in R (base R v.s. ggplot2)
+- Exploratory Data Analysis (EDA)
+
+## Introduction to the Software
+
+### About Virtual Sites
+
+Virtual Sites is a tool that remotely connects you to a Windows environment with access to most of the software we will be using. In this course, Mac/Linux users will have to use it when we introduce Bayesian statistics as WinBUGS is a Windows executable and runs only in a Windows environment.
+
+All following instructions are from [this site](https://its.umich.edu/computing/computers-software/virtual-sites). To begin with, please install and configure the Virtual Sites Windows Remote Desktop client following this [link](https://teamdynamix.umich.edu/TDClient/30/Portal/KB/ArticleDet?ID=8913). 
+
+**Virtual Sites does not save files automatically.** If a Virtual Sites session is terminated, session data will be deleted within 15 minutes. Otherwise, files saved locally (Desktop or My Documents) can be recovered after re-establishing your connection. However, all locally saved files will be deleted within 72 hours.
+
+It is a bit tricky to transfer files between your local machine and the virtual environment. Files stored in U-M Dropbox, U-M Google Drive, and OneDrive are available on Virtual Sites as network drives using Kumo software. Once you authorize your cloud storage accounts, they’ll show up as a network drive in any Virtual Sites session ([click here](https://teamdynamix.umich.edu/TDClient/30/Portal/KB/ArticleDet?ID=4508)).
+
+### About R and RStudio
+
+R is the programming language of choice for statistical engineers and statistical research, and RStudio is a software application that makes R easier to use. Their relationship is just like that between English and Microsoft Word. Even if you use RStudio, you'll still need to download R to your computer.
+
+- Download R from: [The Comprehensive R Archive Network (CRAN) (Click here)](https://cran.r-project.org/) (Also from which you will download most of the packages)
+
+- Download RStudio from: [RStudio (Click here)](https://posit.co/downloads/)
+
+- External resources: Appendix of the book [Hands-On Programming with R (Click here)](https://rstudio-education.github.io/hopr/starting.html)
+
+### About RMarkdown
+
+External resource: [RMarkdown tutorial (Click here)](https://rmarkdown.rstudio.com/lesson-1.html)
+
+RMarkdown provides a simple and user-friendly way to combine plain text
+and (executable) R codes in a file, and can generate high-quality ~~homework~~ reports with formatted codes, fancy graphs, links and so on. 
+
+To begin with, install the R Markdown package from CRAN with:
+
+```{r rmd, eval=FALSE}
+install.packages("rmarkdown")
+```
+
+The RMarkdown file, with the extension `.Rmd`, contains three types of content:
+
+- An (optional) YAML header surrounded by ` --- `s
+- R code chunks surrounded by ` ``` `s
+- text mixed with simple text formatting
+
+**This document itself is a good sample of RMarkdown files!** Please:
+
+- identify the three major components of a RMarkdown file in this document
+- explore how to run a code trunk / a selected line in a code trunk, as well as how to modify the global / individual setting of code trunks
+- find out how text formatting is done in this document, e.g., what is the syntax for emphasis / headers / lists? How to bold and italicize text? How to insert images / links / LaTeX Equations? (find answers in [Markdown Basics (Click here)](https://rmarkdown.rstudio.com/authoring_basics.html)!)
+- figure out how to convert the `.Rmd` file to a reader-friendly report (a `.html` file or a `.pdf` file)
+
+Some (really) useful keyboard shortcuts: [RStudio keyboard shortcuts (Click here)](https://bookdown.org/yihui/rmarkdown-cookbook/rstudio-shortcuts.html)
+
+
+
+### Loading / Saving Data (Virtual Sites as an example)
+
+- Make sure the data file is in your current working directory
+- Otherwise, change directory using: `setwd("working_directory")`
+
+```{r}
+wd <- getwd()
+wd
+setwd(wd)
+
+Auto=read.table("Auto.data")
+head(Auto)
+Auto=read.table("Auto.data",header=T,na.strings="?")
+head(Auto)
+```
+
+```{r}
+dim(Auto)
+Auto[1:4,]
+
+# excluding all rows with NA
+Auto=na.omit(Auto)
+dim(Auto)
+names(Auto)
+```
+
+```{r write}
+write.table(Auto,file="newauto.txt",col.names=TRUE,row.names=FALSE)
+```
+
+
+## Data Visualization in R 
+
+### Data Visualization in R - Base R
+
+```{r}
+head(Auto)
+Auto$cylinders=as.factor(Auto$cylinders)
+head(Auto)
+```
+
+```{r}
+hist(Auto$mpg)
+hist(Auto$mpg,col=2,breaks=15)
+
+plot(Auto$mpg, Auto$horsepower)
+plot(Auto$mpg, Auto$horsepower, xlab="mpg",ylab="horsepower", main="Title", col = "blue")
+```
+
+```{r}
+plot(Auto$cylinders, Auto$mpg)
+# if varwidth is TRUE, the boxes are drawn with widths proportional to 
+# the square-roots of the number of observations in the groups.
+plot(Auto$cylinders, Auto$mpg, col="red", varwidth=T, xlab="cylinders", ylab="MPG")
+plot(Auto$cylinders, Auto$mpg, col="red", varwidth=T,horizontal=T)
+
+pairs(~ mpg + displacement + horsepower + weight + acceleration, Auto)
+```
+
+
+### Data Visualization in R - ggplot2
+
+```{r}
+devtools::install_github("sctyner/memer")
+library(memer)
+meme_get("DistractedBf") %>% meme_text_distbf("ggplot2", "new R users", "base R")
+```
+
+Links to external resources:
+
+- Materials covered in this part can be found in the [book (click here)](https://rkabacoff.github.io/datavis/index.html) “Data Visualization with R” by R.Kabacoff.
+
+- `ggplot2` package [cheat sheet (click here)](https://www.rstudio.com/resources/cheatsheets/)
+
+
+```{r}
+#install.packages('ggplot2')
+library(ggplot2)
+```
+
+#### Aesthetics and Geometric Objects
+
+`ggplot2` is a graphics package in R which helps users build up graphs layer-by-layer. The start of using ggplot2 involves the `ggplot()` function, which sets up the basic configuration of a plot (think of it as setting up a canvas for painting):
+
+```{r}
+# load 1985 Current Population Survey (CPS) data, details available at: https://www.rdocumentation.org/packages/mosaicData/versions/0.16.0/topics/CPS85
+
+# Install the following package 
+# install.packages('mosaicData')
+data(CPS85 , package = "mosaicData")
+
+p = ggplot(data = CPS85, aes(x = exper, y = wage)) # exper: working experience, wage: wage level
+p
+```
+
+Two key elements in setting up the canvas:
+
+ - data: should be a `data.frame` object in R
+ 
+ - aesthetic mapping: set up the x-axis, y-axis variable (referred by name without quotation mark or dollar sign), other options include color, size, markertype, etc. The aesthetic mapping in `ggplot()` function is a global setting which has impact on all plotting layers added later on.
+
+After setting up the canvas, we can start making plots with geometric objects provided in `ggplot2` package. These are basically functions with the prefix `geom_`, such as `geom_point()` (scatter point), `geom_bar()` (bar plot), `geom_line()` (line plot), `geom_histogram()` (histogram). Here we use `geom_point()`:
+
+```{r}
+p + geom_point() # ggplot2 commands are connected via "+"
+ggplot(data = CPS85, aes(x = exper, y = wage)) + geom_point()
+```
+
+Equivalently, we can set the aesthetics mapping locally for the `geom_point()` function, and 
+there will be no difference in this case. 
+
+```{r}
+ggplot(data = CPS85) + geom_point(aes(x = exper, y = wage))
+```
+
+Every `geom_` function has its own attributes for plotting. For `geom_point()`, for instance, you can easily change the color, size, transparency and type of marker by adding additional parameters in `geom_point()`:
+
+```{r}
+p + geom_point(color = "cornflowerblue",
+               alpha = .7, # transparency, range from 0 to 1, 0 means totally invisible
+               size = 3,   # size of the point
+               shape = 2) # type of marker, should be an integer
+```
+
+#### Group and Facet
+
+Furthermore, you can set plotting parameters (like color, size and shape) based on the value of some other variables in the data frame, in order to distinguish observations of different groups. To do so, you need to set the parameter as some other variable in `aes()`. Here we alter the color of each point based on its gender:
+
+```{r}
+ggplot(data = CPS85, aes(x = exper, y = wage)) + 
+  geom_point(aes(color = sex), size = 1) + 
+  geom_smooth(method = "lm", se = FALSE, size = 1)
+```
+
+Note that in the above code there are two aesthetic mappings --- the first one works
+globally, and the second one works locally for the points. In this case, where you specify
+`color = sex` matters. See what happens if we specify it globally: 
+
+```{r}
+ggplot(data = CPS85, aes(x = exper, y = wage, color = sex)) + 
+  geom_point(size = 1) + 
+  geom_smooth(method = "lm", se = FALSE, size = 1)
+```
+
+One can further split all observations into several subplots based on the level of a categorical variable, and the command to use is `facet_wrap()` (note how the subgraphs 
+share axis labels and the legend):
+
+```{r}
+ggplot(data = CPS85,
+       mapping = aes(x = exper, y = wage, color = sex)) +
+  geom_point() +
+  facet_wrap(~sector) # sector: the sector where an individual works at
+```
+
+#### Scales and Labels
+
+One can control the x-axis, y-axis tick marks and tick labels as well as color and many other variables using commands from a family prefixed by `scale_`:
+
+```{r}
+ggplot(data = CPS85,
+       mapping = aes(x = exper, y = wage, color = sex)) +
+  geom_point() +
+  scale_x_continuous(breaks = seq(0, 60, 10)) + # control the ticks on x-axis
+  scale_y_continuous(breaks = seq(0, 50, 5),
+                     label = scales::dollar) +  # control the ticks on y-axis
+  scale_color_manual(labels=c("Female","Male"), # control the text of the legend
+                     values = c("indianred3", 
+                                "cornflowerblue")) # control the color for the two gender classes
+```
+
+To edit the texts in the plot, such as the x,y axis labels, title for the legend, title of the plot and more, one can turn to the `labs()` command and set it up once and for all:
+
+```{r}
+p = ggplot(data = CPS85,
+       mapping = aes(x = exper, y = wage, color = sex)) +
+  geom_point() +
+  labs(title = "Relationship between wages and experience",
+       subtitle = "Current Population Survey", # subtitle, placed underneath the title
+       caption = "source: http://mosaic-web.org/", # caption appears at the bottom
+       x = " Years of Experience", # x-axis label
+       y = "Hourly Wage", # y-axis label
+       color = "Gender") # legend is for the color, so we change legend title by specifying color
+p
+```
+
+
+## Exploratory Data Analysis
+
+> "EDA is detective work… Unless detective finds the clues, judge or jury has nothing to consider." ---John Tukey
+
+Your goal during EDA is to develop an understanding of your data based on various numerical summaries and graphical tools.You can Explore data for patterns, trends, underlying structure, as well as deviations from the trend, anomalies and strange structures. This may bring up meaningful questions to study such as: What type of variation occurs within my variables? What type of covariation occurs between my variables?
+
+EDA can also helps us extract important variables and valid model assumptions if there is any. 
+
+Steps: 
+
+1. Organize / clean data
+
+2. Display data graphically (univariate, bivariate, ...)
+
+3. Summarize data descriptively
+
+- Be aware of patterns and alert for the unexpected!
+
+### Example: Pima dataset 
+
+The National Institute of Diabetes and Digestive and Kidney Diseases conducted 
+a study on 768 adult female Pima Indians living near Phoenix. 
+
+```{r}
+# library(faraway)
+data(pima, package = "faraway")
+head(pima)
+```
+
+The following variables were recorded: number of times pregnant, plasma glucose concentration 
+at 2 hours in an oral glucose tolerance test, diastolic blood pressure (mmHg), 
+triceps skin fold thickness (mm), 2-hour serum insulin (mu U/ml), body mass index 
+(weight in kg/(height in m2)), diabetes pedigree function, age (years) and a test
+whether the patient showed signs of diabetes (coded zero if negative, one if positive). 
+
+Before you start poking around the data set, always remember to do data cleaning! There are often anomalies in a real data set. For example, there may be missing values or unreasonable outliers (age larger than 200 or negative BMI), two levels of a categorical variable can turn out to be the same (e.g. "toyota" and "Toyota"). These issues may prevent you from discovering the underlying pattern of the data.
+
+```{r}
+all(!is.na(pima))
+summary(pima)
+unique(pima$pregnant)
+```
+
+No missing value is found in the `pima` dataset. From the above results, anything unusual?
+
+```{r}
+length(which(pima$diastolic == 0))
+```
+
+We see that the first 35 values are zero. The description that comes with the data says nothing about it but it seems likely that the zero has been used as a missing value code.
+
+Next, we set all zero values of the five variables to NA which is the missing value code by R.
+
+```{r}
+pima$diastolic[pima$diastolic == 0] <- NA
+pima$glucose[pima$glucose == 0] <- NA
+pima$triceps[pima$triceps == 0] <- NA
+pima$insulin[pima$insulin == 0] <- NA
+pima$bmi[pima$bmi == 0] <- NA
+```
+
+The variable `test` is not quantitative but categorical(negative/positive). Such variables are also called factors. However, because of the numerical coding, this variable has been treated as if it were quantitative. It is best to designate such variables as factors so that they are treated appropriately. Sometimes people forget this and compute stupid statistics such as 'average the zip code'.
+
+```{r}
+pima$test <- factor(pima$test)
+levels(pima$test) <- c("negative","positive")
+summary(pima$test)
+```
+
+```{r}
+summary(pima)
+```
+
+Now that we have cleared up the missing values and coded the data appropriately, we are ready to do some plots. 
+
+#### Plots by basic R
+
+First we make some univariate plots:
+
+```{r,fig.width=12, fig.height=5}
+par(mfrow=c(1,3))
+hist(pima$diastolic,xlab="Diastolic",main="")
+plot(density(pima$diastolic,na.rm=TRUE),xlab="Diastolic",main="")
+plot(sort(pima$diastolic),ylab="Sorted Diastolic")
+```
+
+The first panel shows a histogram of the diastolic blood pressures, the second shows a kernel density estimate of the same, while the third shows an index plot of the sorted values. By observing these figures, 
+we can see that the distribution of diastolic blood pressure among these samples is symmetric and concentrated around 70 mmHg. the kernel density curve is closed to the Gaussian bell-shape curve. Hence in the subsequent analysis, it may be reasonable to assume that the diastolic blood pressure of the population marginally follows a normal distribution. 
+
+Now, we show a couple of bivariate plots:
+
+```{r}
+par(mfrow=c(1,2))
+plot(diabetes ~ diastolic,pima)
+plot(diabetes ~ test,pima)
+```
+
+Diabetes pedigree function (DPF) calculates diabetes likelihood depending on the subject's age and his/her diabetic family history. The first graph is the standard scatterplot of DPF versus diastolic blood pressure. One can find that the distribution of DPF is highly right-skewed -- which means that most of the samples are at a low risk of having diabetes, while there are some high-risk outliers. Also, we cannot tell any correlation pattern between these two variables. 
+
+The second graph is the side-by-side boxplot of DPF grouped by the test result. It turns out that samples with positives results in general have higher DPFs, which makes a lot of sense as both variables measure the risk of getting diabetes. 
+
+Good graphics are vital in data analysis. They help you avoid mistakes and suggest the form of the modeling to come. They are also important in communicating your analysis to others. Many in your audience or readership will focus on the graphs. This is your best opportunity to get your message over clearly and without misunderstanding. In some cases, the graphics can be so convincing that the formal analysis becomes just a confirmation of what has already been seen.
+
+
+#### Plots by ggplot2
+
+The library of ggplot2 offers a plotting system with substantial capabilities and nicer graphics than the base plotting functions.
+
+Here we produce ggplot versions of the previous plots:
+
+```{r, warning = FALSE,fig.width=12, fig.height=5}
+library(ggplot2)
+library(ggpubr)
+p1 = ggplot(pima,aes(x=diastolic),color = blue) + geom_histogram(bins = 30, color = "darkblue", fill = "lightblue") + theme_bw()
+p2 = ggplot(pima,aes(x=diastolic)) + geom_density() + theme_bw()
+p3 = ggplot(pima[!(is.na(pima$diastolic)),],aes(x=seq(1,length(sort(pima$diastolic))),y=sort(pima$diastolic))) + geom_point() + labs(x = 'Index', y = "Sorted Diastolic") + theme_bw()
+ggarrange(p1, p2, p3, ncol = 3)
+```
+
+Suppose we want to look more closely at the scatterplot of diabetes pedigree function and diastolic blood pressure, and see whether their relationship varies across samples with different test results, we can make the following plot. It seems that the patterns are the same except samples with positive results tend to have high DPFs. 
+
+```{r,fig.width=12, fig.height=5}
+plot1 = ggplot(pima,aes(x=diastolic,y=diabetes,shape=test,color = test))+geom_point() +
+  theme_bw() + theme(legend.position = "top", legend.direction = "horizontal")
+plot2 = ggplot(pima,aes(x=diastolic,y=diabetes, color = test)) + geom_point(size=1) +
+facet_grid(~ test) + theme_bw()
+ggarrange(plot1, plot2, ncol = 2)
+```
+
+```{r}
+ggplot(pima,aes(x=test,y=diabetes,color = test)) + geom_boxplot() +
+  theme_bw() 
+```
+
+This plot is exactly the same as the one plotted by R basic but looks a lot nicer. 
+
+
+Reference: Ch 1.2 of our textbook.
+
+
+
+
+

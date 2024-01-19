@@ -33,7 +33,7 @@ summary(indata)
 
 ```{r question b}
 table(indata$congrade)
-barplot(table(indata$congrade))
+plot(indata$congrade)
 ```
 
 ## Question c
