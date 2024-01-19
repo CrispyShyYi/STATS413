@@ -1,9 +1,13 @@
 ---
 title: "Assignment 01"
-output: html_document
-Student: "Jialiang Wu"
-unique name: "alfredwu"
+output:
+  pdf_document: default
+Student: Jialiang Wu
+unique name: alfredwu
+fontsize: 14pt
 ---
+\fontsize{10}{10}
+\selectfont
 
 ```{r setup, include = TRUE}
 indata <- read.csv("D:/RStudio/File/STATS413/vwjetta_gas.csv")
