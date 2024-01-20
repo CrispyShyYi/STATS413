@@ -2,29 +2,27 @@
 title: "Assignment 01"
 output:
   pdf_document: default
+  html_document:
+    df_print: paged
 Student: Jialiang Wu
 unique name: alfredwu
-fontsize: 14pt
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
 ---
-\fontsize{10}{10}
-\selectfont
 
 ```{r setup, include = TRUE}
+library(tinytex)
 indata <- read.csv("D:/RStudio/File/STATS413/vwjetta_gas.csv")
 indata$mileage[indata$mileage == 999999] <- NA
 indata$vehage[indata$vehage == 999] <- NA
 indata$mpg[indata$mpg == 99] <- NA
 
 indata$congrade <- factor(indata$congrade)
-levels(indata$congrade) <- c("rough", "average", "clean","excellent")
+levels(indata$congrade) <- c("rough", "average", "clean", "excellent")
 ```
 
 ## Question a
-
-* Use the summary function to get variable summaries after recoding missing values and declaring congrade as a factor with four levels
-* How many values are missing on mileage? on vehage? on mpg?
-
-```{r question a}
+```{r question a, out.width = "50%"}
+options(width = 300)
 summary(indata)
 ```
 * 5 values are missing in **mileage**
@@ -32,97 +30,68 @@ summary(indata)
 * 6 values are missing in **mpg**
 
 ##  Question b
-
-* How many vehicles are there with condition grade equal to rough, average, clean, and excellent? In other words, give the frequency distribution of congrade.
-
-```{r question b}
+```{r question b, out.width = "50%", echo = TRUE}
 table(indata$congrade)
 plot(indata$congrade)
 ```
 
 ## Question c
-
-* Make a matrix scatter plot of the variables resratio, mileage, and vehage.
-
-```{r}
+```{r, out.width = "50%"}
+knitr::opts_chunk$set(fig.width = 6, fig.height = 4) 
 pairs(indata[,c("resratio", "mileage", "vehage")])
 ```
 
 ## Question d
-
-* Make side-by-side boxplots of resratio by the levels of congrade. Calculate the mean resratio by the levels of congrade.
-
-```{r}
+```{r, out.width = "50%"}
+options(width = 300)
 rough_vehicles <- indata[indata$congrade == "rough",]
 average_vehicles <- indata[indata$congrade == "average",]
 clean_vehicles <- indata[indata$congrade == "clean",]
 excellent_vehicles <- indata[indata$congrade == "excellent",]
-
+knitr::opts_chunk$set(fig.width = 6, fig.height = 4) 
 boxplot(rough_vehicles$resratio, average_vehicles$resratio, clean_vehicles$resratio, excellent_vehicles$resratio)
-
 mean_resratio_rough <- mean(rough_vehicles$resratio)
 mean_resratio_average <- mean(average_vehicles$resratio)
 mean_resratio_clean <- mean(clean_vehicles$resratio)
 mean_resratio_excellent <- mean(excellent_vehicles$resratio)
-
-cat("mean resratio of rough:", mean_resratio_rough, "\n")
-cat("mean resratio of average:", mean_resratio_average, "\n")
-cat("mean resratio of clean:", mean_resratio_clean, "\n")
-cat("mean resratio of excellent:", mean_resratio_excellent, "\n")
+cat("mean resratio of rough:", mean_resratio_rough)
+cat("mean resratio of average:", mean_resratio_average)
+cat("mean resratio of clean:", mean_resratio_clean)
+cat("mean resratio of excellent:", mean_resratio_excellent)
 ```
 
 ## Question e
 
-* Make a histogram and a kernel density plot of the variable resratio for vehicles with mileage greater than 100,000. 
-* (Note that mileage has missing values). 
-* Comment on the shape of this distribution. Calculate the mean and standard deviation of resratio for vehicles with mileage greater than 100,000.
-
-```{r}
+```{r, out.width = "50%"}
+options(width = 300)
 mileage_limit <- indata[indata$mileage > 100000,]
-
 resratio_mileage <- mileage_limit$resratio
-
+par(mfrow = c(1,2))
+knitr::opts_chunk$set(fig.width = 6, fig.height = 4) 
 hist(resratio_mileage, main = "resratio for vehicles with mileage greater than 100,000", xlab = "resratio", ylab = "Frequency")
-
 plot(density(resratio_mileage,na.rm = TRUE), main = "kernel density plot of resratio for vehicles with mileage greater than 100,000")
-
 print("The distribution is close to normal distribution")
-
 mean_resratio <- mean(resratio_mileage, na.rm = TRUE)
 cat("mean of resratio for vehicles with mileage greater than 100,000 is:", mean_resratio)
-
 std_resratio <- sd(resratio_mileage, na.rm =  TRUE)
-
 cat("standard deviation of resratio for vehicles with mileage greater than 100,000 is:", std_resratio)
 ```
 
 ## Question f
-
-* Create a new variable that is mileage divided by 15,000. Give this variable the name mile15 and make it a column in your data frame. 
-* For example,
-* dataf$mile15 <- dataf$mileage/15000.
-* For vehicles with average condition grade only, report the mean and standard deviation for variables resratio, mile15, and vehage.
-
-```{r}
+```{r, out.width = "50%"}
+options(width = 300)
 indata$mile15 <- indata$mileage/150000
-
 ave_vehicle <- indata[indata$congrade == "average",]
 mean_average_resratio_edit <- mean(ave_vehicle$resratio)
 sd_average_resratio_edit <- sd(ave_vehicle$resratio)
-
 cat("the mean for resratio is:", mean_average_resratio_edit)
 cat("the standard deviation for resratio is:", sd_average_resratio_edit)
-
-
 mean_average_mile15_edit <- mean(ave_vehicle$mile15, na.rm = TRUE)
 sd_average_mile15_edit <- sd(ave_vehicle$mile15, na.rm = TRUE)
-
 cat("the mean for resratio is:", mean_average_mile15_edit)
 cat("the standard deviation for resratio is:", sd_average_mile15_edit)
-
 mean_average_vehage_edit <- mean(ave_vehicle$vehage, na.rm = TRUE)
 sd_average_vehage_edit <- sd(ave_vehicle$vehage, na.rm = TRUE)
-
 cat("the mean for resratio is:", mean_average_vehage_edit)
 cat("the standard deviation for resratio is:", sd_average_vehage_edit)
 ```
