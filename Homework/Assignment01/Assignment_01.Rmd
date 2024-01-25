@@ -80,7 +80,7 @@ cat("standard deviation of resratio for vehicles with mileage greater than 100,0
 ## Question f
 ```{r, out.width = "50%"}
 options(width = 300)
-indata$mile15 <- indata$mileage/15000
+indata$mile15 <- indata$mileage/150000
 ave_vehicle <- indata[indata$congrade == "average",]
 mean_average_resratio_edit <- mean(ave_vehicle$resratio)
 sd_average_resratio_edit <- sd(ave_vehicle$resratio)
